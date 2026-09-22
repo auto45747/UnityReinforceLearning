@@ -5,16 +5,52 @@ using Unity.MLAgents.Actuators;
 
 public class MoveToTargetAgent : Agent
 {
+    //state space = 6 (agentPos(x,y,z) + targetPos(x,y,z))
     [SerializeField] private Transform target;
-    [SerializeField] private float moveSpeed = 4f;
+    [SerializeField] private Transform obstacle;
+    [SerializeField] private Transform platform;
 
+    [SerializeField] private float moveSpeed = 4f;
+    [SerializeField] private float agentEdgeMargin = 1.5f;
+    [SerializeField] private float targetEdgeMargin = 1.0f;
+    
     public override void OnEpisodeBegin()
     {
-        // Reset agent position
-        transform.localPosition = new Vector3(0, 0.5f, 0);
+        //dynamic platform range
+        float platformHalfX = platform.localScale.x / 2f;
+        float platformHalfZ = platform.localScale.z / 2f;
+        //dynamic agent range calculation
+        float agentRangeX = Mathf.Max(0.5f, platformHalfX - agentEdgeMargin);
+        float agentRangeZ = Mathf.Max(0.5f, platformHalfZ - agentEdgeMargin);
+        //dynamic target range calculation
+        float targetRangeX = Mathf.Max(0.5f, platformHalfX - targetEdgeMargin);
+        float targetRangeZ = Mathf.Max(0.5f, platformHalfZ - targetEdgeMargin);
+        
+        // 1. Spawn Agent safely without overlapping the obstacle
+        Vector3 agentPos;
+        do
+        {
+            agentPos = new Vector3(
+                Random.Range(-agentRangeX, agentRangeX),
+                0.5f,
+                Random.Range(-agentRangeZ, agentRangeZ)
+            );
+        } while (IsOverlappingObstacle(agentPos, 1f));
 
-        // Randomize target position
-        target.localPosition = new Vector3(Random.Range(-4f, 4f), 0.5f, Random.Range(-4f, 4f));
+        transform.localPosition = agentPos;
+
+        // 2. Spawn Target safely without overlapping the obstacle or agent
+        Vector3 targetPos;
+        do
+        {
+            targetPos = new Vector3(
+                Random.Range(-targetRangeX, targetRangeX),
+                0.5f,
+                Random.Range(-targetRangeZ, targetRangeZ)
+            );
+        } while (IsOverlappingObstacle(targetPos, 1f) || Vector3.Distance(agentPos, targetPos) < 1.5f);
+
+        target.localPosition = targetPos;
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -40,7 +76,7 @@ public class MoveToTargetAgent : Agent
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Target") || other.transform == target)
+        if (other.CompareTag("target") || other.transform == target)
         {
             // Base completion reward (always guaranteed on success)
             float baseReward = 0.5f;
@@ -53,11 +89,40 @@ public class MoveToTargetAgent : Agent
             EndEpisode();
         }
     }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("obstacle") || collision.transform == obstacle)
+        {
+            AddReward(-0.1f); // โทษแรงขึ้นเมื่อเริ่มชน
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("obstacle") || collision.transform == obstacle)
+        {
+            AddReward(-0.01f); // หักต่อเนื่องทุกเฟรมถ้ายังแช่อยู่กับกำแพง
+        }
+    }
 
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
         continuousActions[0] = Input.GetAxisRaw("Horizontal");
         continuousActions[1] = Input.GetAxisRaw("Vertical");
+    }
+
+    private bool IsOverlappingObstacle(Vector3 candidatePos, float margin)
+    {
+        if (obstacle == null) return false;
+
+        Vector3 center = obstacle.localPosition;
+        float halfX = (obstacle.localScale.x / 2f) + margin;
+        float halfZ = (obstacle.localScale.z / 2f) + margin;
+
+        bool insideX = Mathf.Abs(candidatePos.x - center.x) < halfX;
+        bool insideZ = Mathf.Abs(candidatePos.z - center.z) < halfZ;
+
+        return insideX && insideZ;
     }
 }
