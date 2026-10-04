@@ -164,6 +164,7 @@ GameObject:
   - component: {fileID: 4955659128947451832}
   - component: {fileID: 3680090138067918228}
   - component: {fileID: 8941520437407765316}
+  - component: {fileID: 1996355976120442705}
   m_Layer: 0
   m_Name: Agent
   m_TagString: Untagged
@@ -290,7 +291,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!114 &8367664379595572289
 MonoBehaviour:
@@ -305,7 +306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 5
+    VectorObservationSize: 6
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 2
@@ -340,12 +341,9 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 1000
   target: {fileID: 5491846134735607961}
-  obstacle: {fileID: 5442633160812376711}
   platform: {fileID: 7733214149571407151}
   moveSpeed: 2
   turnSpeed: 200
-  gridSize: 10
-  newTileReward: 0.01
   agentEdgeMargin: 1.5
   targetEdgeMargin: 1
 --- !u!114 &3680090138067918228
@@ -370,7 +368,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3965886376206549490}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bb6b867a41448888c1cd4f99643ad71, type: 3}
   m_Name: 
@@ -393,6 +391,18 @@ MonoBehaviour:
   rayMissColor: {r: 1, g: 1, b: 1, a: 1}
   m_StartVerticalOffset: 0
   m_EndVerticalOffset: 0
+--- !u!114 &1996355976120442705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3965886376206549490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 865cd042372f446419d2be765189fa24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AgentEvaluator
 --- !u!1 &4696579149083039058
 GameObject:
   m_ObjectHideFlags: 0

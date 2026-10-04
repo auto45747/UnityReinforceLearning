@@ -6,6 +6,7 @@ TagManager:
   tags:
   - obstacle
   - target
+  - floor
   layers:
   - Default
   - TransparentFX
